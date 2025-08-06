@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Build artifacts
+build/
+ParticleFlowTest
+*.swiftmodule
+*.swiftdoc
+*.o
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+
+# Test artifacts
+*.saver
+*.log
