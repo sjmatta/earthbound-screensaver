@@ -22,6 +22,14 @@ struct PatternUniforms {
     var textureSize: SIMD2<UInt32> = SIMD2<UInt32>(256, 256)
 }
 
+struct CRTUniforms {
+    var time: Float = 0
+    var scanlineIntensity: Float = 0.3
+    var pixelSize: Float = 2.0
+    var curvature: Float = 0.02
+    var vignetteStrength: Float = 0.25
+}
+
 class EarthboundMetalRenderer {
     private let device: MTLDevice
     private let commandQueue: MTLCommandQueue
@@ -31,6 +39,7 @@ class EarthboundMetalRenderer {
     private let patternGenerationPipeline: MTLComputePipelineState
     private let distortionPipeline: MTLComputePipelineState
     private let blendPipeline: MTLComputePipelineState
+    private let crtPipeline: MTLComputePipelineState
     
     // Render pipeline for final display
     private let renderPipeline: MTLRenderPipelineState
@@ -41,6 +50,7 @@ class EarthboundMetalRenderer {
     private var layer2BaseTexture: MTLTexture?
     private var layer2DistortedTexture: MTLTexture?
     private var finalTexture: MTLTexture?
+    private var crtTexture: MTLTexture?
     
     // Samplers
     private let linearSampler: MTLSamplerState
@@ -79,7 +89,8 @@ class EarthboundMetalRenderer {
         // Create compute pipelines
         guard let patternFunction = lib.makeFunction(name: "generatePattern"),
               let distortionFunction = lib.makeFunction(name: "applyDistortion"),
-              let blendFunction = lib.makeFunction(name: "blendLayers") else {
+              let blendFunction = lib.makeFunction(name: "blendLayers"),
+              let crtFunction = lib.makeFunction(name: "applyCRTEffect") else {
             return nil
         }
         
@@ -87,6 +98,7 @@ class EarthboundMetalRenderer {
             patternGenerationPipeline = try device.makeComputePipelineState(function: patternFunction)
             distortionPipeline = try device.makeComputePipelineState(function: distortionFunction)
             blendPipeline = try device.makeComputePipelineState(function: blendFunction)
+            crtPipeline = try device.makeComputePipelineState(function: crtFunction)
         } catch {
             print("Failed to create compute pipelines: \(error)")
             return nil
@@ -133,6 +145,7 @@ class EarthboundMetalRenderer {
         layer2BaseTexture = device.makeTexture(descriptor: textureDescriptor)
         layer2DistortedTexture = device.makeTexture(descriptor: textureDescriptor)
         finalTexture = device.makeTexture(descriptor: textureDescriptor)
+        crtTexture = device.makeTexture(descriptor: textureDescriptor)
     }
     
     func render(background: EarthboundBackground, 
@@ -146,7 +159,8 @@ class EarthboundMetalRenderer {
               let layer1Distorted = layer1DistortedTexture,
               let layer2Base = layer2BaseTexture,
               let layer2Distorted = layer2DistortedTexture,
-              let final = finalTexture else {
+              let final = finalTexture,
+              let crt = crtTexture else {
             return
         }
         
@@ -194,9 +208,15 @@ class EarthboundMetalRenderer {
                    output: final,
                    alpha: dynamicAlpha)
         
+        // Apply CRT effect
+        applyCRTEffect(commandBuffer: commandBuffer,
+                      inputTexture: final,
+                      outputTexture: crt,
+                      time: time)
+        
         // Final render to drawable
         renderToDrawable(commandBuffer: commandBuffer,
-                        texture: final,
+                        texture: crt,
                         drawable: drawable)
         
         commandBuffer.present(drawable)
@@ -292,6 +312,37 @@ class EarthboundMetalRenderer {
         let threadgroups = MTLSize(
             width: (output.width + threadgroupSize.width - 1) / threadgroupSize.width,
             height: (output.height + threadgroupSize.height - 1) / threadgroupSize.height,
+            depth: 1
+        )
+        
+        computeEncoder.dispatchThreadgroups(threadgroups, threadsPerThreadgroup: threadgroupSize)
+        computeEncoder.endEncoding()
+    }
+    
+    private func applyCRTEffect(commandBuffer: MTLCommandBuffer,
+                               inputTexture: MTLTexture,
+                               outputTexture: MTLTexture,
+                               time: Float) {
+        
+        guard let computeEncoder = commandBuffer.makeComputeCommandEncoder() else { return }
+        
+        computeEncoder.setComputePipelineState(crtPipeline)
+        computeEncoder.setTexture(inputTexture, index: 0)
+        computeEncoder.setTexture(outputTexture, index: 1)
+        
+        var uniforms = CRTUniforms()
+        uniforms.time = time
+        uniforms.scanlineIntensity = 0.25  // Subtle scanlines
+        uniforms.pixelSize = 3.0           // SNES-like pixellation
+        uniforms.curvature = 0.015         // Subtle CRT curve
+        uniforms.vignetteStrength = 0.2    // Slight edge darkening
+        
+        computeEncoder.setBytes(&uniforms, length: MemoryLayout<CRTUniforms>.size, index: 0)
+        
+        let threadgroupSize = MTLSize(width: 16, height: 16, depth: 1)
+        let threadgroups = MTLSize(
+            width: (outputTexture.width + threadgroupSize.width - 1) / threadgroupSize.width,
+            height: (outputTexture.height + threadgroupSize.height - 1) / threadgroupSize.height,
             depth: 1
         )
         

@@ -356,6 +356,93 @@ vertex VertexOut vertexShader(uint vertexID [[vertex_id]]) {
     return out;
 }
 
+// CRT effect uniforms
+struct CRTUniforms {
+    float time;
+    float scanlineIntensity;
+    float pixelSize;
+    float curvature;
+    float vignetteStrength;
+};
+
+// Apply CRT post-processing effects
+kernel void applyCRTEffect(texture2d<float, access::read> inTexture [[texture(0)]],
+                           texture2d<float, access::write> outTexture [[texture(1)]],
+                           constant CRTUniforms &uniforms [[buffer(0)]],
+                           uint2 gid [[thread_position_in_grid]]) {
+    
+    if (gid.x >= outTexture.get_width() || gid.y >= outTexture.get_height()) {
+        return;
+    }
+    
+    float2 resolution = float2(outTexture.get_width(), outTexture.get_height());
+    float2 uv = float2(gid) / resolution;
+    
+    // Apply barrel distortion for CRT curvature
+    float2 centered = uv * 2.0 - 1.0;
+    float2 curved = centered;
+    if (uniforms.curvature > 0.0) {
+        float r2 = dot(centered, centered);
+        curved = centered * (1.0 + uniforms.curvature * r2);
+    }
+    float2 distortedUV = (curved + 1.0) * 0.5;
+    
+    // Check if we're outside the screen bounds after distortion
+    if (distortedUV.x < 0.0 || distortedUV.x > 1.0 || 
+        distortedUV.y < 0.0 || distortedUV.y > 1.0) {
+        outTexture.write(float4(0.0, 0.0, 0.0, 1.0), gid);
+        return;
+    }
+    
+    // Pixellation effect - downsample to SNES resolution
+    float2 pixelatedUV = distortedUV;
+    if (uniforms.pixelSize > 1.0) {
+        float2 pixelGrid = floor(distortedUV * resolution / uniforms.pixelSize) * uniforms.pixelSize;
+        pixelatedUV = pixelGrid / resolution;
+    }
+    
+    // Sample the texture
+    uint2 samplePos = uint2(pixelatedUV * resolution);
+    samplePos.x = min(samplePos.x, uint(resolution.x - 1));
+    samplePos.y = min(samplePos.y, uint(resolution.y - 1));
+    float4 color = inTexture.read(samplePos);
+    
+    // Scanline effect
+    float scanline = 1.0;
+    if (uniforms.scanlineIntensity > 0.0) {
+        float scanlineY = gid.y;
+        scanline = 1.0 - uniforms.scanlineIntensity * abs(sin(scanlineY * 3.14159));
+        
+        // Add subtle horizontal banding
+        if (int(scanlineY) % 3 == 0) {
+            scanline *= 0.85;
+        }
+    }
+    
+    // Phosphor glow simulation
+    float glow = 1.0 + 0.05 * sin(uniforms.time * 60.0 + gid.y * 0.5);
+    
+    // Vignette effect
+    float vignette = 1.0;
+    if (uniforms.vignetteStrength > 0.0) {
+        float2 vignetteUV = uv * (1.0 - uv.yx);
+        vignette = pow(vignetteUV.x * vignetteUV.y * 15.0, uniforms.vignetteStrength);
+    }
+    
+    // Apply all effects
+    color.rgb *= scanline * glow * vignette;
+    
+    // Subtle color bleeding for authentic CRT look
+    float bleed = 0.002;
+    uint2 bleedPos = uint2((float2(gid) + float2(bleed * resolution.x, 0)) );
+    if (bleedPos.x < uint(resolution.x)) {
+        float4 bleedColor = inTexture.read(bleedPos);
+        color.r = mix(color.r, bleedColor.r, 0.1);
+    }
+    
+    outTexture.write(color, gid);
+}
+
 // Fragment shader for final display
 fragment float4 fragmentShader(VertexOut in [[stage_in]],
                               texture2d<float> texture [[texture(0)]],
