@@ -16,7 +16,7 @@ class ScreensaverTestHarness {
     
     init() {
         // Initialize test environment
-        print("🧪 ParticleFlow Screensaver Test Harness")
+        print("🧪 EarthboundBattle Screensaver Test Harness")
         print("========================================")
     }
     
@@ -226,7 +226,7 @@ class ScreensaverTestHarness {
     }
     
     func runAllTests() {
-        let bundlePath = "build/ParticleFlow.saver"
+        let bundlePath = "build/EarthboundBattle.saver"
         
         // Check if bundle exists
         if !FileManager.default.fileExists(atPath: bundlePath) {

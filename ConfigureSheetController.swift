@@ -2,167 +2,129 @@ import Cocoa
 
 class ConfigureSheetController: NSWindowController {
     
-    @IBOutlet weak var particleCountSlider: NSSlider!
-    @IBOutlet weak var particleCountLabel: NSTextField!
-    @IBOutlet weak var speedSlider: NSSlider!
-    @IBOutlet weak var speedLabel: NSTextField!
-    @IBOutlet weak var colorSchemePopup: NSPopUpButton!
-    @IBOutlet weak var turbulenceCheckbox: NSButton!
-    @IBOutlet weak var glowEffectCheckbox: NSButton!
-    
-    override var windowNibName: NSNib.Name? {
-        return "ConfigureSheet"
-    }
+    private var backgroundPopUp: NSPopUpButton!
+    private var transitionSpeedSlider: NSSlider!
+    private var transitionLabel: NSTextField!
+    private var showNamesCheckbox: NSButton!
     
     override init(window: NSWindow?) {
         super.init(window: window)
         
-        let bundle = Bundle(for: type(of: self))
-        guard bundle.loadNibNamed("ConfigureSheet", owner: self, topLevelObjects: nil) else {
-            createProgrammaticUI()
-            return
+        // Create window programmatically
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 500, height: 350),
+                             styleMask: [.titled, .closable],
+                             backing: .buffered,
+                             defer: false)
+        window.title = "Earthbound Battle Backgrounds Settings"
+        window.center()
+        
+        self.window = window
+        
+        // Create content view
+        let contentView = NSView(frame: window.contentView!.bounds)
+        
+        // Title label
+        let titleLabel = NSTextField(labelWithString: "Earthbound Battle Backgrounds")
+        titleLabel.frame = NSRect(x: 20, y: 300, width: 460, height: 30)
+        titleLabel.alignment = .center
+        titleLabel.font = NSFont.boldSystemFont(ofSize: 16)
+        contentView.addSubview(titleLabel)
+        
+        // Background selection
+        let bgLabel = NSTextField(labelWithString: "Background:")
+        bgLabel.frame = NSRect(x: 20, y: 250, width: 100, height: 20)
+        contentView.addSubview(bgLabel)
+        
+        backgroundPopUp = NSPopUpButton(frame: NSRect(x: 130, y: 248, width: 350, height: 26))
+        backgroundPopUp.addItem(withTitle: "Random (Cycle All)")
+        backgroundPopUp.menu?.addItem(NSMenuItem.separator())
+        
+        let backgrounds = EarthboundBackground.getAllBackgrounds()
+        for (index, bg) in backgrounds.enumerated() {
+            backgroundPopUp.addItem(withTitle: "\(index + 1). \(bg.name)")
         }
+        
+        // Load saved preference
+        let defaults = UserDefaults.standard
+        let savedIndex = defaults.integer(forKey: "EarthboundBackgroundIndex")
+        backgroundPopUp.selectItem(at: savedIndex)
+        
+        contentView.addSubview(backgroundPopUp)
+        
+        // Transition speed
+        let speedLabel = NSTextField(labelWithString: "Transition Speed:")
+        speedLabel.frame = NSRect(x: 20, y: 200, width: 120, height: 20)
+        contentView.addSubview(speedLabel)
+        
+        transitionSpeedSlider = NSSlider(frame: NSRect(x: 150, y: 198, width: 250, height: 26))
+        transitionSpeedSlider.minValue = 10
+        transitionSpeedSlider.maxValue = 120
+        transitionSpeedSlider.doubleValue = defaults.double(forKey: "EarthboundTransitionSpeed")
+        if transitionSpeedSlider.doubleValue == 0 {
+            transitionSpeedSlider.doubleValue = 30
+        }
+        transitionSpeedSlider.target = self
+        transitionSpeedSlider.action = #selector(sliderChanged(_:))
+        contentView.addSubview(transitionSpeedSlider)
+        
+        transitionLabel = NSTextField(labelWithString: "\(Int(transitionSpeedSlider.doubleValue)) seconds")
+        transitionLabel.frame = NSRect(x: 410, y: 200, width: 70, height: 20)
+        transitionLabel.isEditable = false
+        transitionLabel.isBordered = false
+        transitionLabel.backgroundColor = NSColor.clear
+        contentView.addSubview(transitionLabel)
+        
+        // Show background names checkbox
+        showNamesCheckbox = NSButton(checkboxWithTitle: "Show background names", target: self, action: #selector(checkboxChanged(_:)))
+        showNamesCheckbox.frame = NSRect(x: 20, y: 150, width: 200, height: 20)
+        showNamesCheckbox.state = defaults.bool(forKey: "EarthboundShowNames") ? .on : .off
+        contentView.addSubview(showNamesCheckbox)
+        
+        // Info text
+        let infoText = NSTextField(wrappingLabelWithString: "Experience the iconic battle backgrounds from Earthbound/Mother 2, featuring 327 unique layer patterns with procedural distortion effects.")
+        infoText.frame = NSRect(x: 20, y: 70, width: 460, height: 60)
+        infoText.alignment = .center
+        infoText.font = NSFont.systemFont(ofSize: 11)
+        contentView.addSubview(infoText)
+        
+        // Button bar
+        let cancelButton = NSButton(title: "Cancel", target: self, action: #selector(cancelSheet(_:)))
+        cancelButton.frame = NSRect(x: 310, y: 20, width: 80, height: 30)
+        cancelButton.bezelStyle = .rounded
+        contentView.addSubview(cancelButton)
+        
+        let okButton = NSButton(title: "OK", target: self, action: #selector(saveAndClose(_:)))
+        okButton.frame = NSRect(x: 400, y: 20, width: 80, height: 30)
+        okButton.bezelStyle = .rounded
+        okButton.keyEquivalent = "\r"
+        contentView.addSubview(okButton)
+        
+        window.contentView = contentView
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
     
-    private func createProgrammaticUI() {
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
-            styleMask: [.titled, .closable],
-            backing: .buffered,
-            defer: false
-        )
-        window.title = "Particle Flow Settings"
-        window.center()
-        
-        let contentView = NSView(frame: window.contentRect(forFrameRect: window.frame))
-        
-        let titleLabel = NSTextField(labelWithString: "Particle Flow Configuration")
-        titleLabel.font = NSFont.boldSystemFont(ofSize: 16)
-        titleLabel.frame = NSRect(x: 20, y: 250, width: 360, height: 30)
-        contentView.addSubview(titleLabel)
-        
-        let particleLabel = NSTextField(labelWithString: "Particle Density:")
-        particleLabel.frame = NSRect(x: 20, y: 200, width: 120, height: 20)
-        contentView.addSubview(particleLabel)
-        
-        let particleSlider = NSSlider(value: 50, minValue: 10, maxValue: 200, target: self, action: #selector(particleCountChanged(_:)))
-        particleSlider.frame = NSRect(x: 150, y: 200, width: 180, height: 20)
-        contentView.addSubview(particleSlider)
-        
-        let particleValueLabel = NSTextField(labelWithString: "50")
-        particleValueLabel.frame = NSRect(x: 340, y: 200, width: 40, height: 20)
-        contentView.addSubview(particleValueLabel)
-        self.particleCountLabel = particleValueLabel
-        self.particleCountSlider = particleSlider
-        
-        let speedLabel = NSTextField(labelWithString: "Animation Speed:")
-        speedLabel.frame = NSRect(x: 20, y: 160, width: 120, height: 20)
-        contentView.addSubview(speedLabel)
-        
-        let speedSlider = NSSlider(value: 1.0, minValue: 0.1, maxValue: 3.0, target: self, action: #selector(speedChanged(_:)))
-        speedSlider.frame = NSRect(x: 150, y: 160, width: 180, height: 20)
-        contentView.addSubview(speedSlider)
-        
-        let speedValueLabel = NSTextField(labelWithString: "1.0x")
-        speedValueLabel.frame = NSRect(x: 340, y: 160, width: 40, height: 20)
-        contentView.addSubview(speedValueLabel)
-        self.speedLabel = speedValueLabel
-        self.speedSlider = speedSlider
-        
-        let colorLabel = NSTextField(labelWithString: "Color Scheme:")
-        colorLabel.frame = NSRect(x: 20, y: 120, width: 120, height: 20)
-        contentView.addSubview(colorLabel)
-        
-        let colorPopup = NSPopUpButton(frame: NSRect(x: 150, y: 118, width: 180, height: 25))
-        colorPopup.addItems(withTitles: ["Neon Dreams", "Ocean Depths", "Sunset Glow", "Northern Lights", "Cosmic Dust"])
-        contentView.addSubview(colorPopup)
-        self.colorSchemePopup = colorPopup
-        
-        let turbulenceCheck = NSButton(checkboxWithTitle: "Enable Turbulence Fields", target: self, action: #selector(turbulenceToggled(_:)))
-        turbulenceCheck.frame = NSRect(x: 20, y: 80, width: 200, height: 20)
-        turbulenceCheck.state = .on
-        contentView.addSubview(turbulenceCheck)
-        self.turbulenceCheckbox = turbulenceCheck
-        
-        let glowCheck = NSButton(checkboxWithTitle: "Enable Glow Effect", target: self, action: #selector(glowToggled(_:)))
-        glowCheck.frame = NSRect(x: 20, y: 50, width: 200, height: 20)
-        glowCheck.state = .on
-        contentView.addSubview(glowCheck)
-        self.glowEffectCheckbox = glowCheck
-        
-        let cancelButton = NSButton(title: "Cancel", target: self, action: #selector(cancelClicked(_:)))
-        cancelButton.frame = NSRect(x: 220, y: 10, width: 80, height: 30)
-        contentView.addSubview(cancelButton)
-        
-        let okButton = NSButton(title: "OK", target: self, action: #selector(okClicked(_:)))
-        okButton.frame = NSRect(x: 310, y: 10, width: 80, height: 30)
-        okButton.keyEquivalent = "\r"
-        contentView.addSubview(okButton)
-        
-        window.contentView = contentView
-        self.window = window
-        
-        loadSettings()
+    @objc private func sliderChanged(_ sender: NSSlider) {
+        transitionLabel.stringValue = "\(Int(sender.doubleValue)) seconds"
     }
     
-    override func windowDidLoad() {
-        super.windowDidLoad()
-        loadSettings()
+    @objc private func checkboxChanged(_ sender: NSButton) {
+        // Update will be saved when OK is clicked
     }
     
-    private func loadSettings() {
+    @objc private func cancelSheet(_ sender: Any) {
+        window?.close()
+    }
+    
+    @objc private func saveAndClose(_ sender: Any) {
         let defaults = UserDefaults.standard
-        particleCountSlider?.integerValue = defaults.integer(forKey: "ParticleFlowParticleCount")
-        if particleCountSlider?.integerValue == 0 {
-            particleCountSlider?.integerValue = 50
-        }
-        particleCountLabel?.stringValue = "\(particleCountSlider?.integerValue ?? 50)"
-        
-        speedSlider?.doubleValue = defaults.double(forKey: "ParticleFlowSpeed")
-        if speedSlider?.doubleValue == 0 {
-            speedSlider?.doubleValue = 1.0
-        }
-        speedLabel?.stringValue = String(format: "%.1fx", speedSlider?.doubleValue ?? 1.0)
-        
-        colorSchemePopup?.selectItem(at: defaults.integer(forKey: "ParticleFlowColorScheme"))
-        turbulenceCheckbox?.state = defaults.bool(forKey: "ParticleFlowTurbulence") ? .on : .off
-        glowEffectCheckbox?.state = defaults.bool(forKey: "ParticleFlowGlow") ? .on : .off
-    }
-    
-    private func saveSettings() {
-        let defaults = UserDefaults.standard
-        defaults.set(particleCountSlider?.integerValue ?? 50, forKey: "ParticleFlowParticleCount")
-        defaults.set(speedSlider?.doubleValue ?? 1.0, forKey: "ParticleFlowSpeed")
-        defaults.set(colorSchemePopup?.indexOfSelectedItem ?? 0, forKey: "ParticleFlowColorScheme")
-        defaults.set(turbulenceCheckbox?.state == .on, forKey: "ParticleFlowTurbulence")
-        defaults.set(glowEffectCheckbox?.state == .on, forKey: "ParticleFlowGlow")
+        defaults.set(backgroundPopUp.indexOfSelectedItem, forKey: "EarthboundBackgroundIndex")
+        defaults.set(transitionSpeedSlider.doubleValue, forKey: "EarthboundTransitionSpeed")
+        defaults.set(showNamesCheckbox.state == .on, forKey: "EarthboundShowNames")
         defaults.synchronize()
-    }
-    
-    @objc private func particleCountChanged(_ sender: NSSlider) {
-        particleCountLabel?.stringValue = "\(sender.integerValue)"
-    }
-    
-    @objc private func speedChanged(_ sender: NSSlider) {
-        speedLabel?.stringValue = String(format: "%.1fx", sender.doubleValue)
-    }
-    
-    @objc private func turbulenceToggled(_ sender: NSButton) {
-    }
-    
-    @objc private func glowToggled(_ sender: NSButton) {
-    }
-    
-    @objc private func cancelClicked(_ sender: NSButton) {
-        window?.sheetParent?.endSheet(window!, returnCode: .cancel)
-    }
-    
-    @objc private func okClicked(_ sender: NSButton) {
-        saveSettings()
-        window?.sheetParent?.endSheet(window!, returnCode: .OK)
+        
+        window?.close()
     }
 }

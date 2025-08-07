@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_NAME="ParticleFlow"
+PROJECT_NAME="EarthboundBattle"
 BUNDLE_NAME="${PROJECT_NAME}.saver"
 BUILD_DIR="build"
 MACOS_DIR="${BUILD_DIR}/${BUNDLE_NAME}/Contents/MacOS"
@@ -14,14 +14,23 @@ mkdir -p ${RESOURCES_DIR}
 mkdir -p ${BUILD_DIR}/arm64
 mkdir -p ${BUILD_DIR}/x86_64
 
+echo "Compiling Metal shaders..."
+xcrun -sdk macosx metal -c EarthboundShaders.metal -o "${BUILD_DIR}/EarthboundShaders.air"
+xcrun -sdk macosx metallib "${BUILD_DIR}/EarthboundShaders.air" -o "${RESOURCES_DIR}/default.metallib"
+
+if [ $? -ne 0 ]; then
+    echo "Metal shader compilation failed!"
+    exit 1
+fi
+
 echo "Compiling Swift files for arm64..."
 swiftc \
     -target arm64-apple-macos11.0 \
     -emit-library \
     -o "${BUILD_DIR}/arm64/${PROJECT_NAME}" \
     -framework ScreenSaver \
-    -framework SpriteKit \
-    -framework GameplayKit \
+    -framework Metal \
+    -framework MetalKit \
     -framework Cocoa \
     -module-name ${PROJECT_NAME} \
     -emit-module \
@@ -31,9 +40,10 @@ swiftc \
     -Xlinker @executable_path/../Frameworks \
     -Xlinker -rpath \
     -Xlinker @loader_path/../Frameworks \
-    ParticleFlowView.swift \
-    ParticleFlowScene.swift \
-    SimpleTestScene.swift \
+    EarthboundBattleView.swift \
+    EarthboundMetalView.swift \
+    EarthboundMetalRenderer.swift \
+    BackgroundData.swift \
     ConfigureSheetController.swift
 
 if [ $? -ne 0 ]; then
@@ -47,8 +57,8 @@ swiftc \
     -emit-library \
     -o "${BUILD_DIR}/x86_64/${PROJECT_NAME}" \
     -framework ScreenSaver \
-    -framework SpriteKit \
-    -framework GameplayKit \
+    -framework Metal \
+    -framework MetalKit \
     -framework Cocoa \
     -module-name ${PROJECT_NAME} \
     -emit-module \
@@ -58,9 +68,10 @@ swiftc \
     -Xlinker @executable_path/../Frameworks \
     -Xlinker -rpath \
     -Xlinker @loader_path/../Frameworks \
-    ParticleFlowView.swift \
-    ParticleFlowScene.swift \
-    SimpleTestScene.swift \
+    EarthboundBattleView.swift \
+    EarthboundMetalView.swift \
+    EarthboundMetalRenderer.swift \
+    BackgroundData.swift \
     ConfigureSheetController.swift
 
 if [ $? -ne 0 ]; then
@@ -104,7 +115,7 @@ echo ""
 echo "To install:"
 echo "  1. Double-click ${BUILD_DIR}/${BUNDLE_NAME}"
 echo "  2. Click 'Install' when prompted"
-echo "  3. Open System Settings > Screen Saver and select 'Particle Flow'"
+echo "  3. Open System Settings > Screen Saver and select 'Earthbound Battle'"
 echo ""
 echo "If you get a security warning:"
 echo "  - Go to System Settings > Privacy & Security"

@@ -5,13 +5,13 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleExecutable</key>
-    <string>ParticleFlow</string>
+    <string>EarthboundBattle</string>
     <key>CFBundleIdentifier</key>
-    <string>com.example.particleflow</string>
+    <string>com.example.earthboundbattle</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Particle Flow</string>
+    <string>Earthbound Battle</string>
     <key>CFBundlePackageType</key>
     <string>BNDL</string>
     <key>CFBundleShortVersionString</key>
@@ -19,8 +19,9 @@
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>NSPrincipalClass</key>
-    <string>ParticleFlow.ParticleFlowView</string>
+    <string>EarthboundBattle.EarthboundBattleView</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Copyright © 2025. All rights reserved.</string>
+    <string>Copyright © 2025. All rights reserved.
+Earthbound backgrounds inspired by gjtorikian/Earthbound-Battle-Backgrounds-JS</string>
 </dict>
 </plist>
