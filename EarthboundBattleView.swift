@@ -8,6 +8,11 @@ public class EarthboundBattleView: ScreenSaverView {
     private var metalView: EarthboundMetalView?
     private var device: MTLDevice?
     
+    // Store the configuration controller as a lazy property to ensure it persists
+    private lazy var configController: ConfigureSheetController = {
+        return ConfigureSheetController()
+    }()
+    
     public override init?(frame: NSRect, isPreview: Bool) {
         super.init(frame: frame, isPreview: isPreview)
         animationTimeInterval = 1.0 / 60.0
@@ -29,8 +34,7 @@ public class EarthboundBattleView: ScreenSaverView {
     }
     
     public override var configureSheet: NSWindow? {
-        let controller = ConfigureSheetController()
-        return controller.window
+        return configController.window
     }
     
     public override func startAnimation() {

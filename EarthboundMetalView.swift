@@ -203,7 +203,14 @@ extension EarthboundMetalView: MTKViewDelegate {
     
     func draw(in view: MTKView) {
         let currentTime = CACurrentMediaTime()
-        let frameTime = Float(currentTime - startTime) * 0.5 // SNES-authentic speed
+        
+        // Read animation speed from user defaults
+        let defaults = UserDefaults.standard
+        var animSpeed = Float(defaults.double(forKey: "EarthboundAnimationSpeed"))
+        if animSpeed == 0 {
+            animSpeed = 0.5  // Default SNES speed
+        }
+        let frameTime = Float(currentTime - startTime) * animSpeed
         
         // Update scroll offsets
         updateScrollOffsets(deltaTime: 1.0/60.0)

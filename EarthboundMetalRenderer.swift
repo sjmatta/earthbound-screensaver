@@ -266,11 +266,18 @@ class EarthboundMetalRenderer {
         computeEncoder.setTexture(inputTexture, index: 0)
         computeEncoder.setTexture(outputTexture, index: 1)
         
+        // Read distortion intensity from user defaults
+        let defaults = UserDefaults.standard
+        var distortionIntensity = Float(defaults.double(forKey: "EarthboundDistortionIntensity"))
+        if distortionIntensity == 0 {
+            distortionIntensity = 1.0
+        }
+        
         let t2 = time * time
         var uniforms = DistortionUniforms()
         uniforms.time = time
-        uniforms.amplitude = distortion.amplitude + distortion.amplitudeAcceleration * t2
-        uniforms.amplitudeAccel = distortion.amplitudeAcceleration
+        uniforms.amplitude = (distortion.amplitude + distortion.amplitudeAcceleration * t2) * distortionIntensity
+        uniforms.amplitudeAccel = distortion.amplitudeAcceleration * distortionIntensity
         uniforms.frequency = distortion.frequency + distortion.frequencyAcceleration * t2
         uniforms.frequencyAccel = distortion.frequencyAcceleration
         uniforms.compression = distortion.compression + distortion.compressionAcceleration * t2
@@ -330,12 +337,40 @@ class EarthboundMetalRenderer {
         computeEncoder.setTexture(inputTexture, index: 0)
         computeEncoder.setTexture(outputTexture, index: 1)
         
+        // Read CRT settings from user defaults
+        let defaults = UserDefaults.standard
+        let crtEnabled = defaults.object(forKey: "EarthboundCRTEnabled") as? Bool ?? true
+        
         var uniforms = CRTUniforms()
         uniforms.time = time
-        uniforms.scanlineIntensity = 0.25  // Subtle scanlines
-        uniforms.pixelSize = 3.0           // SNES-like pixellation
-        uniforms.curvature = 0.015         // Subtle CRT curve
-        uniforms.vignetteStrength = 0.2    // Slight edge darkening
+        
+        if crtEnabled {
+            uniforms.scanlineIntensity = Float(defaults.double(forKey: "EarthboundScanlineIntensity"))
+            if uniforms.scanlineIntensity == 0 && defaults.object(forKey: "EarthboundScanlineIntensity") == nil {
+                uniforms.scanlineIntensity = 0.25
+            }
+            
+            uniforms.pixelSize = Float(defaults.double(forKey: "EarthboundPixelSize"))
+            if uniforms.pixelSize == 0 {
+                uniforms.pixelSize = 3.0
+            }
+            
+            uniforms.curvature = Float(defaults.double(forKey: "EarthboundCurvature"))
+            if uniforms.curvature == 0 && defaults.object(forKey: "EarthboundCurvature") == nil {
+                uniforms.curvature = 0.015
+            }
+            
+            uniforms.vignetteStrength = Float(defaults.double(forKey: "EarthboundVignette"))
+            if uniforms.vignetteStrength == 0 && defaults.object(forKey: "EarthboundVignette") == nil {
+                uniforms.vignetteStrength = 0.2
+            }
+        } else {
+            // CRT disabled - set all effects to minimal/off
+            uniforms.scanlineIntensity = 0.0
+            uniforms.pixelSize = 1.0
+            uniforms.curvature = 0.0
+            uniforms.vignetteStrength = 0.0
+        }
         
         computeEncoder.setBytes(&uniforms, length: MemoryLayout<CRTUniforms>.size, index: 0)
         

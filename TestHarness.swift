@@ -128,10 +128,11 @@ class ScreensaverTestHarness {
         if view.hasConfigureSheet {
             print("✅ Configuration sheet available")
             
-            if let _ = view.configureSheet {
+            if let configSheet = view.configureSheet {
                 print("✅ Configuration sheet can be created")
-                testResults["configuration"] = true
-                return true
+                
+                // Test the actual sheet interaction
+                return testConfigurationSheetInteraction(configSheet)
             } else {
                 print("⚠️  Configuration sheet creation returned nil")
                 testResults["configuration"] = false
@@ -142,6 +143,98 @@ class ScreensaverTestHarness {
             testResults["configuration"] = true
             return true
         }
+    }
+    
+    func testConfigurationSheetInteraction(_ configSheet: NSWindow) -> Bool {
+        print("🔬 Testing configuration sheet button behavior...")
+        
+        // Create a parent window to simulate System Preferences
+        let parentWindow = NSWindow(
+            contentRect: NSRect(x: 100, y: 100, width: 800, height: 600),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        parentWindow.title = "Mock System Preferences"
+        parentWindow.makeKeyAndOrderFront(nil)
+        
+        // Present the configuration sheet as a modal sheet
+        print("   - Presenting configuration sheet as modal...")
+        parentWindow.beginSheet(configSheet) { response in
+            print("   - Sheet ended with response: \(response.rawValue)")
+        }
+        
+        // Allow the sheet to fully present
+        Thread.sleep(forTimeInterval: 0.5)
+        
+        // Verify the sheet is properly attached
+        if configSheet.sheetParent == parentWindow {
+            print("✅ Configuration sheet properly attached to parent")
+        } else {
+            print("❌ Configuration sheet not properly attached")
+            parentWindow.close()
+            testResults["configuration"] = false
+            return false
+        }
+        
+        // Test Cancel button
+        print("   - Testing Cancel button...")
+        if let cancelButton = findButton(in: configSheet, withTitle: "Cancel") {
+            print("   - Found Cancel button, triggering action...")
+            
+            // Trigger the cancel action
+            if let target = cancelButton.target, let action = cancelButton.action {
+                _ = target.perform(action, with: cancelButton)
+                
+                // Allow time for the sheet to dismiss
+                Thread.sleep(forTimeInterval: 0.5)
+                
+                // Verify the sheet was dismissed
+                if configSheet.sheetParent == nil {
+                    print("✅ Cancel button properly dismisses sheet")
+                } else {
+                    print("❌ Cancel button failed to dismiss sheet")
+                    // Force cleanup
+                    parentWindow.endSheet(configSheet)
+                    parentWindow.close()
+                    testResults["configuration"] = false
+                    return false
+                }
+            } else {
+                print("⚠️  Cancel button has no target or action")
+            }
+        } else {
+            print("⚠️  Cancel button not found in configuration sheet")
+        }
+        
+        // Clean up
+        parentWindow.close()
+        
+        testResults["configuration"] = true
+        return true
+    }
+    
+    // Helper function to find a button by title in a window
+    func findButton(in window: NSWindow, withTitle title: String) -> NSButton? {
+        return findButton(in: window.contentView, withTitle: title)
+    }
+    
+    func findButton(in view: NSView?, withTitle title: String) -> NSButton? {
+        guard let view = view else { return nil }
+        
+        // Check if this view is the button we're looking for
+        if let button = view as? NSButton, button.title == title {
+            return button
+        }
+        
+        // Recursively search subviews
+        for subview in view.subviews {
+            if let button = findButton(in: subview, withTitle: title) {
+                return button
+            }
+        }
+        
+        return nil
     }
     
     func testRendering() -> Bool {
