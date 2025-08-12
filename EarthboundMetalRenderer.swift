@@ -223,6 +223,125 @@ class EarthboundMetalRenderer {
         commandBuffer.commit()
     }
     
+    func renderTransition(currentBackground: EarthboundBackground,
+                         nextBackground: EarthboundBackground,
+                         alpha: Float,
+                         time: Float,
+                         layer1ScrollOffset: SIMD2<Float>,
+                         layer2ScrollOffset: SIMD2<Float>,
+                         drawable: CAMetalDrawable) {
+        
+        guard let commandBuffer = commandQueue.makeCommandBuffer(),
+              let layer1BaseCurrent = layer1BaseTexture,
+              let layer1DistortedCurrent = layer1DistortedTexture,
+              let layer2BaseCurrent = layer2BaseTexture,
+              let layer2DistortedCurrent = layer2DistortedTexture,
+              let finalCurrent = finalTexture,
+              let crt = crtTexture else { return }
+        
+        // We need additional textures for the next background
+        // For simplicity, we'll create temporary textures
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(
+            pixelFormat: .rgba8Unorm,
+            width: layer1BaseCurrent.width,
+            height: layer1BaseCurrent.height,
+            mipmapped: false)
+        textureDescriptor.usage = [.shaderRead, .shaderWrite]
+        
+        guard let layer1BaseNext = device.makeTexture(descriptor: textureDescriptor),
+              let layer1DistortedNext = device.makeTexture(descriptor: textureDescriptor),
+              let layer2BaseNext = device.makeTexture(descriptor: textureDescriptor),
+              let layer2DistortedNext = device.makeTexture(descriptor: textureDescriptor),
+              let finalNext = device.makeTexture(descriptor: textureDescriptor) else { return }
+        
+        // Render current background
+        generatePattern(commandBuffer: commandBuffer, layer: currentBackground.layer1, outputTexture: layer1BaseCurrent)
+        generatePattern(commandBuffer: commandBuffer, layer: currentBackground.layer2, outputTexture: layer2BaseCurrent)
+        
+        if let distortion = currentBackground.layer1.distortion {
+            applyDistortion(commandBuffer: commandBuffer,
+                           inputTexture: layer1BaseCurrent,
+                           outputTexture: layer1DistortedCurrent,
+                           distortion: distortion,
+                           time: time,
+                           scrollOffset: layer1ScrollOffset)
+        } else {
+            copyTexture(commandBuffer: commandBuffer, from: layer1BaseCurrent, to: layer1DistortedCurrent)
+        }
+        
+        if let distortion = currentBackground.layer2.distortion {
+            applyDistortion(commandBuffer: commandBuffer,
+                           inputTexture: layer2BaseCurrent,
+                           outputTexture: layer2DistortedCurrent,
+                           distortion: distortion,
+                           time: time,
+                           scrollOffset: layer2ScrollOffset)
+        } else {
+            copyTexture(commandBuffer: commandBuffer, from: layer2BaseCurrent, to: layer2DistortedCurrent)
+        }
+        
+        let dynamicAlphaCurrent = 0.5 + 0.3 * sin(time * 0.5)
+        blendLayers(commandBuffer: commandBuffer,
+                   layer1: layer1DistortedCurrent,
+                   layer2: layer2DistortedCurrent,
+                   output: finalCurrent,
+                   alpha: dynamicAlphaCurrent)
+        
+        // Render next background
+        generatePattern(commandBuffer: commandBuffer, layer: nextBackground.layer1, outputTexture: layer1BaseNext)
+        generatePattern(commandBuffer: commandBuffer, layer: nextBackground.layer2, outputTexture: layer2BaseNext)
+        
+        if let distortion = nextBackground.layer1.distortion {
+            applyDistortion(commandBuffer: commandBuffer,
+                           inputTexture: layer1BaseNext,
+                           outputTexture: layer1DistortedNext,
+                           distortion: distortion,
+                           time: time,
+                           scrollOffset: layer1ScrollOffset)
+        } else {
+            copyTexture(commandBuffer: commandBuffer, from: layer1BaseNext, to: layer1DistortedNext)
+        }
+        
+        if let distortion = nextBackground.layer2.distortion {
+            applyDistortion(commandBuffer: commandBuffer,
+                           inputTexture: layer2BaseNext,
+                           outputTexture: layer2DistortedNext,
+                           distortion: distortion,
+                           time: time,
+                           scrollOffset: layer2ScrollOffset)
+        } else {
+            copyTexture(commandBuffer: commandBuffer, from: layer2BaseNext, to: layer2DistortedNext)
+        }
+        
+        let dynamicAlphaNext = 0.5 + 0.3 * sin(time * 0.5)
+        blendLayers(commandBuffer: commandBuffer,
+                   layer1: layer1DistortedNext,
+                   layer2: layer2DistortedNext,
+                   output: finalNext,
+                   alpha: dynamicAlphaNext)
+        
+        // Crossfade between current and next backgrounds
+        blendLayers(commandBuffer: commandBuffer,
+                   layer1: finalCurrent,
+                   layer2: finalNext,
+                   output: crt, // Use CRT texture as intermediate
+                   alpha: alpha)
+        
+        // Apply CRT effect to the crossfaded result
+        applyCRTEffect(commandBuffer: commandBuffer,
+                      inputTexture: crt,
+                      outputTexture: finalCurrent, // Reuse as final output
+                      time: time)
+        
+        // Final render to drawable
+        renderToDrawable(commandBuffer: commandBuffer,
+                        texture: finalCurrent,
+                        drawable: drawable)
+        
+        commandBuffer.present(drawable)
+        commandBuffer.commit()
+    }
+    
     private func generatePattern(commandBuffer: MTLCommandBuffer,
                                 layer: BackgroundLayer,
                                 outputTexture: MTLTexture) {
