@@ -370,25 +370,21 @@ class EarthboundDialogueBox: NSView {
     }
     
     private func setupDialogueBox() {
-        // Create background (dark blue like Earthbound dialogue boxes)
+        // Create background (authentic Earthbound battle window blue)
         backgroundView = NSView()
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor(red: 0.067, green: 0.133, blue: 0.267, alpha: 0.95).cgColor // RGB(17, 34, 68) - authentic Earthbound blue
-        backgroundView.layer?.cornerRadius = 8.0
+        backgroundView.layer?.backgroundColor = NSColor(red: 0.078, green: 0.157, blue: 0.314, alpha: 1.0).cgColor // RGB(20, 40, 80) - authentic darker blue
+        // NO rounded corners - SNES windows are sharp and rectangular
         
-        // Add subtle shadow for depth
-        backgroundView.layer?.shadowColor = NSColor.black.cgColor
-        backgroundView.layer?.shadowOffset = CGSize(width: 2, height: -2)
-        backgroundView.layer?.shadowOpacity = 0.5
-        backgroundView.layer?.shadowRadius = 4.0
+        // NO shadows - SNES era had no shadow effects
         addSubview(backgroundView)
         
-        // Create border (bright white like SNES/pixel art)
+        // Create thick authentic SNES-style border (bright white)
         borderView = NSView()
         borderView.wantsLayer = true
         borderView.layer?.borderColor = NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0).cgColor // Pure white for authentic pixel art look
-        borderView.layer?.borderWidth = 2.0 // Slightly thinner for better proportions
-        borderView.layer?.cornerRadius = 4.0
+        borderView.layer?.borderWidth = 4.0 // Thick authentic SNES border
+        // NO rounded corners - keep it sharp and rectangular like real SNES
         backgroundView.addSubview(borderView)
         
         // Create custom pixel text renderer for authentic Earthbound font
@@ -402,18 +398,18 @@ class EarthboundDialogueBox: NSView {
     override func layout() {
         super.layout()
         
-        let padding: CGFloat = 20
-        let borderInset: CGFloat = 8
+        let padding: CGFloat = 24 // More generous padding for chunky pixel text
+        let borderInset: CGFloat = 12 // Larger inset for thicker authentic border
         
         // Position background to fill the view
         backgroundView.frame = bounds
         
-        // Create inner border with padding
+        // Create inner border with authentic SNES spacing
         borderView.frame = NSRect(x: borderInset, y: borderInset, 
                                  width: bounds.width - borderInset * 2, 
                                  height: bounds.height - borderInset * 2)
         
-        // Position pixel text view inside border with padding
+        // Position pixel text view inside border with authentic spacing
         pixelTextView.frame = NSRect(x: padding, y: padding,
                                     width: borderView.bounds.width - padding * 2,
                                     height: borderView.bounds.height - padding * 2)
@@ -462,7 +458,7 @@ class EarthboundMetalView: MTKView {
     private var backgroundIndex: Int = 0
     private var startTime: CFTimeInterval = 0
     private var transitionTimer: CFTimeInterval = 0
-    private let transitionDuration: CFTimeInterval = 30.0
+    private let transitionDuration: CFTimeInterval = 75.0
     private var transitionStartTime: CFTimeInterval = 0
     private var isTransitioning = false
     private let crossfadeDuration: CFTimeInterval = 2.0
@@ -529,8 +525,8 @@ class EarthboundMetalView: MTKView {
     
     private func setupDialogueBox() {
         // Create dialogue box positioned at bottom center like Earthbound
-        let boxWidth: CGFloat = 600 // Much wider for longer background names
-        let boxHeight: CGFloat = 120 // Taller for chunky pixels and proper spacing
+        let boxWidth: CGFloat = 800 // Wider for longest names like "New Age Retro Hippie"
+        let boxHeight: CGFloat = 140 // Taller for authentic SNES window proportions
         let margin: CGFloat = 40
         
         let boxFrame = NSRect(
@@ -548,8 +544,8 @@ class EarthboundMetalView: MTKView {
     
     private func updateDialogueBoxFrame() {
         guard let dialogue = dialogueBox else { return }
-        let boxWidth: CGFloat = 600 // Much wider for longer background names
-        let boxHeight: CGFloat = 120 // Taller for chunky pixels and proper spacing
+        let boxWidth: CGFloat = 800 // Wider for longest names like "New Age Retro Hippie"
+        let boxHeight: CGFloat = 140 // Taller for authentic SNES window proportions
         let margin: CGFloat = 40
         
         dialogue.frame = NSRect(
@@ -602,8 +598,8 @@ class EarthboundMetalView: MTKView {
         let shouldShow = defaults.bool(forKey: "EarthboundShowNames")
         
         if shouldShow {
-            // Show with Earthbound-style message
-            dialogue.show(message: "Now playing: \(name)", duration: 4.0)
+            // Show with authentic Earthbound battle text style
+            dialogue.show(message: name, duration: 4.0)
         }
     }
     
@@ -618,17 +614,17 @@ class EarthboundMetalView: MTKView {
         layer2ScrollOffset.x += Float(bg.layer2.scrollSpeed.x) * deltaTime * 30
         layer2ScrollOffset.y += Float(bg.layer2.scrollSpeed.y) * deltaTime * 30
         
-        // Wrap to prevent precision issues
-        if abs(layer1ScrollOffset.x) > 10000 {
+        // Wrap to prevent precision issues and corruption
+        if abs(layer1ScrollOffset.x) > 1000 {
             layer1ScrollOffset.x = layer1ScrollOffset.x.truncatingRemainder(dividingBy: 256)
         }
-        if abs(layer1ScrollOffset.y) > 10000 {
+        if abs(layer1ScrollOffset.y) > 1000 {
             layer1ScrollOffset.y = layer1ScrollOffset.y.truncatingRemainder(dividingBy: 256)
         }
-        if abs(layer2ScrollOffset.x) > 10000 {
+        if abs(layer2ScrollOffset.x) > 1000 {
             layer2ScrollOffset.x = layer2ScrollOffset.x.truncatingRemainder(dividingBy: 256)
         }
-        if abs(layer2ScrollOffset.y) > 10000 {
+        if abs(layer2ScrollOffset.y) > 1000 {
             layer2ScrollOffset.y = layer2ScrollOffset.y.truncatingRemainder(dividingBy: 256)
         }
     }
@@ -688,7 +684,7 @@ extension EarthboundMetalView: MTKViewDelegate {
         let defaults = UserDefaults.standard
         var animSpeed = Float(defaults.double(forKey: "EarthboundAnimationSpeed"))
         if animSpeed == 0 {
-            animSpeed = 1.0  // Default authentic SNES speed for 30 FPS
+            animSpeed = 0.8  // Slower, more meditative authentic SNES speed for 30 FPS
         }
         let frameTime = Float(currentTime - startTime) * animSpeed
         

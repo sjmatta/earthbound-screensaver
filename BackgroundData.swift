@@ -349,30 +349,30 @@ struct EarthboundBackground {
                     paletteIndex: 0, // Fire palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 64,
+                        amplitude: 10,
                         amplitudeAcceleration: 0,
                         frequency: 0.02,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 2.0
+                        speed: 0.7
                     ),
-                    scrollSpeed: CGPoint(x: 0.5, y: 0)
+                    scrollSpeed: CGPoint(x: 0.15, y: 0)
                 ),
                 layer2: BackgroundLayer(
                     patternIndex: 82, // Wave pattern
                     paletteIndex: 10, // Lava palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 32,
+                        amplitude: 10,
                         amplitudeAcceleration: 0.01,
                         frequency: 0.03,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: -1.5
+                        speed: -0.5
                     ),
-                    scrollSpeed: CGPoint(x: -0.3, y: 0.2)
+                    scrollSpeed: CGPoint(x: -0.1, y: 0.05)
                 )
             ),
             
@@ -383,30 +383,30 @@ struct EarthboundBackground {
                     paletteIndex: 7, // Ocean palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 48,
+                        amplitude: 18,
                         amplitudeAcceleration: 0,
                         frequency: 0.015,
                         frequencyAcceleration: 0,
                         compression: 0.1,
                         compressionAcceleration: 0,
-                        speed: 1.0
+                        speed: 0.3
                     ),
-                    scrollSpeed: CGPoint(x: 0, y: 0.5)
+                    scrollSpeed: CGPoint(x: 0, y: 0.15)
                 ),
                 layer2: BackgroundLayer(
                     patternIndex: 85, // Wave pattern
                     paletteIndex: 1, // Ice palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 24,
+                        amplitude: 8,
                         amplitudeAcceleration: 0,
                         frequency: 0.04,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 2.5
+                        speed: 0.8
                     ),
-                    scrollSpeed: CGPoint(x: 0.2, y: -0.1)
+                    scrollSpeed: CGPoint(x: 0.06, y: -0.03)
                 )
             ),
             
@@ -417,30 +417,30 @@ struct EarthboundBackground {
                     paletteIndex: 2, // Psychedelic palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 56,
+                        amplitude: 26,
                         amplitudeAcceleration: 0.02,
                         frequency: 0.025,
                         frequencyAcceleration: 0.001,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 3.0
+                        speed: 1.0
                     ),
-                    scrollSpeed: CGPoint(x: 1.0, y: 0.5)
+                    scrollSpeed: CGPoint(x: 0.3, y: 0.15)
                 ),
                 layer2: BackgroundLayer(
                     patternIndex: 305, // Organic pattern
                     paletteIndex: 14, // Rainbow palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 40,
+                        amplitude: 14,
                         amplitudeAcceleration: -0.01,
                         frequency: 0.035,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: -2.0
+                        speed: -0.7
                     ),
-                    scrollSpeed: CGPoint(x: -0.7, y: -0.3)
+                    scrollSpeed: CGPoint(x: -0.2, y: -0.1)
                 )
             ),
             
@@ -451,7 +451,7 @@ struct EarthboundBackground {
                     paletteIndex: 5, // Monochrome palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 32,
+                        amplitude: 10,
                         amplitudeAcceleration: 0,
                         frequency: 0.02,
                         frequencyAcceleration: 0,
@@ -466,15 +466,15 @@ struct EarthboundBackground {
                     paletteIndex: 11, // Cosmic palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 28,
+                        amplitude: 8,
                         amplitudeAcceleration: 0,
                         frequency: 0.045,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 2.0
+                        speed: 0.7
                     ),
-                    scrollSpeed: CGPoint(x: -0.2, y: 0.4)
+                    scrollSpeed: CGPoint(x: -0.06, y: 0.12)
                 )
             ),
             
@@ -485,13 +485,13 @@ struct EarthboundBackground {
                     paletteIndex: 4, // Neon palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 60,
+                        amplitude: 8,
                         amplitudeAcceleration: 0.03,
                         frequency: 0.018,
                         frequencyAcceleration: 0.002,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 2.5
+                        speed: 0.8
                     ),
                     scrollSpeed: CGPoint(x: 0.6, y: -0.2)
                 ),
@@ -500,13 +500,13 @@ struct EarthboundBackground {
                     paletteIndex: 9, // Royal palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 36,
+                        amplitude: 12,
                         amplitudeAcceleration: -0.02,
                         frequency: 0.03,
                         frequencyAcceleration: 0,
                         compression: 0.2,
                         compressionAcceleration: -0.001,
-                        speed: -1.8
+                        speed: -0.6
                     ),
                     scrollSpeed: CGPoint(x: -0.4, y: 0.6)
                 )
@@ -519,7 +519,7 @@ struct EarthboundBackground {
                     paletteIndex: 11, // Cosmic palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 44,
+                        amplitude: 16,
                         amplitudeAcceleration: 0,
                         frequency: 0.022,
                         frequencyAcceleration: 0,
@@ -534,13 +534,13 @@ struct EarthboundBackground {
                     paletteIndex: 6, // Sunset palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 52,
+                        amplitude: 22,
                         amplitudeAcceleration: 0.01,
                         frequency: 0.028,
                         frequencyAcceleration: 0.001,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: -2.2
+                        speed: -0.7
                     ),
                     scrollSpeed: CGPoint(x: -0.5, y: 0.3)
                 )
@@ -553,7 +553,7 @@ struct EarthboundBackground {
                     paletteIndex: 12, // Toxic palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 38,
+                        amplitude: 14,
                         amplitudeAcceleration: 0.02,
                         frequency: 0.016,
                         frequencyAcceleration: 0,
@@ -568,15 +568,15 @@ struct EarthboundBackground {
                     paletteIndex: 3, // Earth palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 30,
+                        amplitude: 10,
                         amplitudeAcceleration: -0.01,
                         frequency: 0.038,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 1.6
+                        speed: 0.5
                     ),
-                    scrollSpeed: CGPoint(x: -0.3, y: -0.4)
+                    scrollSpeed: CGPoint(x: -0.1, y: -0.12)
                 )
             ),
             
@@ -587,30 +587,30 @@ struct EarthboundBackground {
                     paletteIndex: 4, // Neon palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 48,
+                        amplitude: 18,
                         amplitudeAcceleration: 0,
                         frequency: 0.032,
                         frequencyAcceleration: 0.002,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 3.5
+                        speed: 1.1
                     ),
-                    scrollSpeed: CGPoint(x: 0.8, y: 0)
+                    scrollSpeed: CGPoint(x: 0.24, y: 0)
                 ),
                 layer2: BackgroundLayer(
                     patternIndex: 245, // Gradient pattern
                     paletteIndex: 1, // Ice palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 36,
+                        amplitude: 12,
                         amplitudeAcceleration: 0.01,
                         frequency: 0.026,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: -2.8
+                        speed: -0.9
                     ),
-                    scrollSpeed: CGPoint(x: -0.6, y: 0.2)
+                    scrollSpeed: CGPoint(x: -0.18, y: 0.06)
                 )
             ),
             
@@ -621,13 +621,13 @@ struct EarthboundBackground {
                     paletteIndex: 11, // Cosmic palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 42,
+                        amplitude: 16,
                         amplitudeAcceleration: 0,
                         frequency: 0.024,
                         frequencyAcceleration: 0,
                         compression: 0.18,
                         compressionAcceleration: 0,
-                        speed: 1.8
+                        speed: 0.6
                     ),
                     scrollSpeed: CGPoint(x: 0.4, y: 0.4)
                 ),
@@ -636,13 +636,13 @@ struct EarthboundBackground {
                     paletteIndex: 9, // Royal palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 50,
+                        amplitude: 20,
                         amplitudeAcceleration: 0.02,
                         frequency: 0.02,
                         frequencyAcceleration: 0.001,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: -2.5
+                        speed: -0.8
                     ),
                     scrollSpeed: CGPoint(x: -0.5, y: -0.3)
                 )
@@ -655,13 +655,13 @@ struct EarthboundBackground {
                     paletteIndex: 3, // Earth palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 34,
+                        amplitude: 12,
                         amplitudeAcceleration: 0,
                         frequency: 0.036,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 2.2
+                        speed: 0.7
                     ),
                     scrollSpeed: CGPoint(x: 0.3, y: 0.1)
                 ),
@@ -670,13 +670,13 @@ struct EarthboundBackground {
                     paletteIndex: 5, // Monochrome palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 28,
+                        amplitude: 8,
                         amplitudeAcceleration: -0.01,
                         frequency: 0.042,
                         frequencyAcceleration: 0,
                         compression: 0.12,
                         compressionAcceleration: 0.001,
-                        speed: -1.4
+                        speed: -0.5
                     ),
                     scrollSpeed: CGPoint(x: -0.2, y: 0.5)
                 )
@@ -689,28 +689,28 @@ struct EarthboundBackground {
                     paletteIndex: 3, // Earth palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 46,
+                        amplitude: 18,
                         amplitudeAcceleration: 0.01,
                         frequency: 0.019,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 1.6
+                        speed: 0.5
                     ),
-                    scrollSpeed: CGPoint(x: 0.5, y: 0.3)
+                    scrollSpeed: CGPoint(x: 0.15, y: 0.1)
                 ),
                 layer2: BackgroundLayer(
                     patternIndex: 265, // Mosaic pattern
                     paletteIndex: 10, // Lava palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 38,
+                        amplitude: 14,
                         amplitudeAcceleration: 0,
                         frequency: 0.029,
                         frequencyAcceleration: 0.001,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: -2.0
+                        speed: -0.7
                     ),
                     scrollSpeed: CGPoint(x: -0.4, y: -0.2)
                 )
@@ -723,7 +723,7 @@ struct EarthboundBackground {
                     paletteIndex: 8, // Forest palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 40,
+                        amplitude: 14,
                         amplitudeAcceleration: 0.02,
                         frequency: 0.021,
                         frequencyAcceleration: 0,
@@ -738,13 +738,13 @@ struct EarthboundBackground {
                     paletteIndex: 12, // Toxic palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 32,
+                        amplitude: 10,
                         amplitudeAcceleration: -0.01,
                         frequency: 0.034,
                         frequencyAcceleration: 0,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 2.4
+                        speed: 0.8
                     ),
                     scrollSpeed: CGPoint(x: -0.3, y: -0.4)
                 )
@@ -757,28 +757,28 @@ struct EarthboundBackground {
                     paletteIndex: 13, // Candy palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 54,
+                        amplitude: 8,
                         amplitudeAcceleration: 0.03,
                         frequency: 0.023,
                         frequencyAcceleration: 0.002,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 2.8
+                        speed: 0.9
                     ),
-                    scrollSpeed: CGPoint(x: 0.7, y: 0.1)
+                    scrollSpeed: CGPoint(x: 0.21, y: 0.03)
                 ),
                 layer2: BackgroundLayer(
                     patternIndex: 324, // Radial gradient
                     paletteIndex: 6, // Sunset palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 44,
+                        amplitude: 16,
                         amplitudeAcceleration: 0,
                         frequency: 0.027,
                         frequencyAcceleration: 0,
                         compression: 0.16,
                         compressionAcceleration: -0.001,
-                        speed: -1.9
+                        speed: -0.6
                     ),
                     scrollSpeed: CGPoint(x: -0.5, y: 0.4)
                 )
@@ -791,13 +791,13 @@ struct EarthboundBackground {
                     paletteIndex: 0, // Fire palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 64,
+                        amplitude: 10,
                         amplitudeAcceleration: 0.04,
                         frequency: 0.015,
                         frequencyAcceleration: 0.003,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: 4.0
+                        speed: 1.2
                     ),
                     scrollSpeed: CGPoint(x: 1.0, y: 0.5)
                 ),
@@ -806,15 +806,15 @@ struct EarthboundBackground {
                     paletteIndex: 10, // Lava palette
                     distortion: DistortionEffect(
                         type: .horizontalInterlaced,
-                        amplitude: 56,
+                        amplitude: 26,
                         amplitudeAcceleration: -0.03,
                         frequency: 0.025,
                         frequencyAcceleration: -0.002,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: -3.5
+                        speed: -1.0
                     ),
-                    scrollSpeed: CGPoint(x: -0.8, y: -0.6)
+                    scrollSpeed: CGPoint(x: -0.24, y: -0.18)
                 )
             ),
             
@@ -825,30 +825,30 @@ struct EarthboundBackground {
                     paletteIndex: 1, // Ice palette
                     distortion: DistortionEffect(
                         type: .vertical,
-                        amplitude: 48,
+                        amplitude: 18,
                         amplitudeAcceleration: 0,
                         frequency: 0.018,
                         frequencyAcceleration: 0,
                         compression: 0.3,
                         compressionAcceleration: 0.003,
-                        speed: 2.0
+                        speed: 0.7
                     ),
-                    scrollSpeed: CGPoint(x: 0.6, y: 0.2)
+                    scrollSpeed: CGPoint(x: 0.18, y: 0.06)
                 ),
                 layer2: BackgroundLayer(
                     patternIndex: 242, // Gradient pattern
                     paletteIndex: 11, // Cosmic palette
                     distortion: DistortionEffect(
                         type: .horizontal,
-                        amplitude: 40,
+                        amplitude: 14,
                         amplitudeAcceleration: 0.02,
                         frequency: 0.031,
                         frequencyAcceleration: 0.001,
                         compression: 0,
                         compressionAcceleration: 0,
-                        speed: -2.6
+                        speed: -0.8
                     ),
-                    scrollSpeed: CGPoint(x: -0.7, y: 0.3)
+                    scrollSpeed: CGPoint(x: -0.21, y: 0.09)
                 )
             )
         ]

@@ -255,13 +255,19 @@ kernel void applyDistortion(texture2d<float, access::read> inTexture [[texture(0
         return;
     }
     
-    float t = uniforms.time;
+    // Wrap time to prevent overflow corruption (every ~10 minutes)
+    float t = fmod(uniforms.time, 600.0);
     float t2 = t * t;
     
-    // Calculate time-varying parameters
+    // Calculate time-varying parameters with bounds checking
     float amplitude = uniforms.amplitude + uniforms.amplitudeAccel * t2;
     float frequency = uniforms.frequency + uniforms.frequencyAccel * t2;
     float compression = 1.0 + (uniforms.compression + uniforms.compressionAccel * t2) / 256.0;
+    
+    // Clamp amplitude to prevent extreme distortion corruption
+    amplitude = clamp(amplitude, -200.0, 200.0);
+    frequency = clamp(frequency, 0.001, 0.1);
+    compression = clamp(compression, 0.5, 2.0);
     float speed = uniforms.speed * t;
     
     float2 coord = float2(gid) + uniforms.scrollOffset;

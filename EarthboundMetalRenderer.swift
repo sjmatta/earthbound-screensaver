@@ -227,7 +227,7 @@ class EarthboundMetalRenderer {
         }
         
         // Blend layers with dynamic alpha based on time
-        let dynamicAlpha = 0.5 + 0.3 * sin(time * 0.5)
+        let dynamicAlpha = 0.55 + 0.45 * sin(time * 0.5)
         blendLayers(commandBuffer: commandBuffer,
                    layer1: layer1Distorted,
                    layer2: layer2Distorted,
@@ -266,9 +266,9 @@ class EarthboundMetalRenderer {
               let crt = crtTexture else { return }
         
         // We need additional textures for the next background
-        // For simplicity, we'll create temporary textures
+        // Use same format as main textures to prevent corruption
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(
-            pixelFormat: .rgba8Unorm,
+            pixelFormat: .rgba32Float,
             width: layer1BaseCurrent.width,
             height: layer1BaseCurrent.height,
             mipmapped: false)
@@ -306,7 +306,7 @@ class EarthboundMetalRenderer {
             copyTexture(commandBuffer: commandBuffer, from: layer2BaseCurrent, to: layer2DistortedCurrent)
         }
         
-        let dynamicAlphaCurrent = 0.5 + 0.3 * sin(time * 0.5)
+        let dynamicAlphaCurrent = 0.55 + 0.45 * sin(time * 0.5)
         blendLayers(commandBuffer: commandBuffer,
                    layer1: layer1DistortedCurrent,
                    layer2: layer2DistortedCurrent,
@@ -339,7 +339,7 @@ class EarthboundMetalRenderer {
             copyTexture(commandBuffer: commandBuffer, from: layer2BaseNext, to: layer2DistortedNext)
         }
         
-        let dynamicAlphaNext = 0.5 + 0.3 * sin(time * 0.5)
+        let dynamicAlphaNext = 0.55 + 0.45 * sin(time * 0.5)
         blendLayers(commandBuffer: commandBuffer,
                    layer1: layer1DistortedNext,
                    layer2: layer2DistortedNext,
