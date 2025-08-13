@@ -349,11 +349,15 @@ class EarthboundPixelTextView: NSView {
     }
 }
 
-// Earthbound-style dialogue box view
+// Earthbound-style dialogue box view with typewriter effect
 class EarthboundDialogueBox: NSView {
     private var pixelTextView: EarthboundPixelTextView!
     private var backgroundView: NSView!
     private var borderView: NSView!
+    private var typewriterTimer: Timer?
+    private var fullText: String = ""
+    private var currentCharIndex: Int = 0
+    private let typewriterSpeed: TimeInterval = 0.05  // Authentic SNES text speed
     
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -416,20 +420,35 @@ class EarthboundDialogueBox: NSView {
     }
     
     func show(message: String, duration: TimeInterval = 4.0) {
-        pixelTextView.setText(message)
+        // Stop any existing typewriter effect
+        typewriterTimer?.invalidate()
         
-        // Animate in with a quick fade
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.3
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            animator().alphaValue = 1.0
-        } completionHandler: {
-            // Wait then animate out
-            DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
-                NSAnimationContext.runAnimationGroup { context in
-                    context.duration = 0.5
-                    context.timingFunction = CAMediaTimingFunction(name: .easeIn)
-                    self.animator().alphaValue = 0.0
+        // Set up for typewriter effect
+        fullText = message
+        currentCharIndex = 0
+        pixelTextView.setText("")  // Start with empty text
+        
+        // Show dialogue box immediately (no fade)
+        alphaValue = 1.0
+        
+        // Start typewriter effect
+        startTypewriterEffect(duration: duration)
+    }
+    
+    private func startTypewriterEffect(duration: TimeInterval) {
+        typewriterTimer = Timer.scheduledTimer(withTimeInterval: typewriterSpeed, repeats: true) { _ in
+            if self.currentCharIndex < self.fullText.count {
+                let endIndex = self.fullText.index(self.fullText.startIndex, offsetBy: self.currentCharIndex + 1)
+                let currentText = String(self.fullText[..<endIndex])
+                self.pixelTextView.setText(currentText)
+                self.currentCharIndex += 1
+            } else {
+                // Typewriter complete, stop timer
+                self.typewriterTimer?.invalidate()
+                
+                // Wait then hide immediately (no fade)
+                DispatchQueue.main.asyncAfter(deadline: .now() + duration - TimeInterval(self.fullText.count) * self.typewriterSpeed) {
+                    self.alphaValue = 0.0  // Immediate hide, no animation
                 }
             }
         }
@@ -477,7 +496,7 @@ class EarthboundMetalView: MTKView {
         // Configure MTKView
         colorPixelFormat = .bgra8Unorm
         clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 1)
-        preferredFramesPerSecond = 60
+        preferredFramesPerSecond = 30  // Authentic SNES 30 FPS
         isPaused = false  // Ensure it's not paused
         enableSetNeedsDisplay = false  // Use timer-based drawing
         
@@ -510,8 +529,8 @@ class EarthboundMetalView: MTKView {
     
     private func setupDialogueBox() {
         // Create dialogue box positioned at bottom center like Earthbound
-        let boxWidth: CGFloat = 500 // Wider for chunky pixels
-        let boxHeight: CGFloat = 100 // Taller for chunky pixels
+        let boxWidth: CGFloat = 600 // Much wider for longer background names
+        let boxHeight: CGFloat = 120 // Taller for chunky pixels and proper spacing
         let margin: CGFloat = 40
         
         let boxFrame = NSRect(
@@ -529,8 +548,8 @@ class EarthboundMetalView: MTKView {
     
     private func updateDialogueBoxFrame() {
         guard let dialogue = dialogueBox else { return }
-        let boxWidth: CGFloat = 500 // Wider for chunky pixels
-        let boxHeight: CGFloat = 100 // Taller for chunky pixels
+        let boxWidth: CGFloat = 600 // Much wider for longer background names
+        let boxHeight: CGFloat = 120 // Taller for chunky pixels and proper spacing
         let margin: CGFloat = 40
         
         dialogue.frame = NSRect(
@@ -591,13 +610,13 @@ class EarthboundMetalView: MTKView {
     private func updateScrollOffsets(deltaTime: Float) {
         guard let bg = currentBackground else { return }
         
-        // Update layer 1 scroll
-        layer1ScrollOffset.x += Float(bg.layer1.scrollSpeed.x) * deltaTime * 60
-        layer1ScrollOffset.y += Float(bg.layer1.scrollSpeed.y) * deltaTime * 60
+        // Update layer 1 scroll with authentic 30 FPS timing
+        layer1ScrollOffset.x += Float(bg.layer1.scrollSpeed.x) * deltaTime * 30
+        layer1ScrollOffset.y += Float(bg.layer1.scrollSpeed.y) * deltaTime * 30
         
-        // Update layer 2 scroll
-        layer2ScrollOffset.x += Float(bg.layer2.scrollSpeed.x) * deltaTime * 60
-        layer2ScrollOffset.y += Float(bg.layer2.scrollSpeed.y) * deltaTime * 60
+        // Update layer 2 scroll with authentic 30 FPS timing
+        layer2ScrollOffset.x += Float(bg.layer2.scrollSpeed.x) * deltaTime * 30
+        layer2ScrollOffset.y += Float(bg.layer2.scrollSpeed.y) * deltaTime * 30
         
         // Wrap to prevent precision issues
         if abs(layer1ScrollOffset.x) > 10000 {
@@ -669,12 +688,12 @@ extension EarthboundMetalView: MTKViewDelegate {
         let defaults = UserDefaults.standard
         var animSpeed = Float(defaults.double(forKey: "EarthboundAnimationSpeed"))
         if animSpeed == 0 {
-            animSpeed = 0.5  // Default SNES speed
+            animSpeed = 1.0  // Default authentic SNES speed for 30 FPS
         }
         let frameTime = Float(currentTime - startTime) * animSpeed
         
-        // Update scroll offsets
-        updateScrollOffsets(deltaTime: 1.0/60.0)
+        // Update scroll offsets with authentic 30 FPS timing
+        updateScrollOffsets(deltaTime: 1.0/30.0)
         
         // Check for background transitions
         checkForTransition(currentTime: currentTime)

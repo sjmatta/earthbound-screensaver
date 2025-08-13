@@ -15,7 +15,7 @@ public class EarthboundBattleView: ScreenSaverView {
     
     public override init?(frame: NSRect, isPreview: Bool) {
         super.init(frame: frame, isPreview: isPreview)
-        animationTimeInterval = 1.0 / 60.0
+        animationTimeInterval = 1.0 / 30.0  // Authentic SNES 30 FPS timing
         
         // Initialize Metal device
         device = MTLCreateSystemDefaultDevice()
@@ -23,7 +23,7 @@ public class EarthboundBattleView: ScreenSaverView {
     
     public required init?(coder: NSCoder) {
         super.init(coder: coder)
-        animationTimeInterval = 1.0 / 60.0
+        animationTimeInterval = 1.0 / 30.0  // Authentic SNES 30 FPS timing
         
         // Initialize Metal device
         device = MTLCreateSystemDefaultDevice()

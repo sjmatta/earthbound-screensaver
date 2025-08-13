@@ -133,7 +133,7 @@ class ConfigureSheetController: NSObject {
         animationSpeedSlider.maxValue = 2.0
         animationSpeedSlider.doubleValue = defaults.double(forKey: "EarthboundAnimationSpeed")
         if animationSpeedSlider.doubleValue == 0 {
-            animationSpeedSlider.doubleValue = 0.5  // Default SNES speed
+            animationSpeedSlider.doubleValue = 1.0  // Default authentic SNES speed for 30 FPS
         }
         animationSpeedSlider.target = self
         animationSpeedSlider.action = #selector(sliderChanged(_:))
@@ -350,7 +350,7 @@ class ConfigureSheetController: NSObject {
         backgroundPopUp.selectItem(at: 0)
         transitionSpeedSlider.doubleValue = 30
         showNamesCheckbox.state = .off
-        animationSpeedSlider.doubleValue = 0.5
+        animationSpeedSlider.doubleValue = 1.0  // Authentic SNES speed
         distortionIntensitySlider.doubleValue = 1.0
         crtEnabledCheckbox.state = .on
         scanlineIntensitySlider.doubleValue = 0.25
