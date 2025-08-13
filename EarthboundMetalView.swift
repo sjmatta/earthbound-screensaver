@@ -2,9 +2,356 @@ import MetalKit
 import simd
 import Cocoa
 
+// Custom pixel text renderer for authentic Earthbound font look
+class EarthboundPixelTextView: NSView {
+    private var text: String = ""
+    private let pixelSize: CGFloat = 4.0 // Chunky pixels for that authentic low-res SNES feel
+    
+    func setText(_ text: String) {
+        self.text = text
+        needsDisplay = true
+    }
+    
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        
+        // Set pixel-perfect rendering
+        context.setShouldAntialias(false)
+        context.interpolationQuality = .none
+        
+        // Earthbound text color (slightly blue-white like CRT)
+        context.setFillColor(red: 0.95, green: 0.95, blue: 1.0, alpha: 1.0)
+        
+        // Center the text horizontally
+        let textWidth = CGFloat(text.count) * (8 * pixelSize + pixelSize) - pixelSize
+        let x = (bounds.width - textWidth) / 2
+        drawPixelText(context: context, text: text, at: CGPoint(x: x, y: bounds.height / 2))
+    }
+    
+    private func drawPixelText(context: CGContext, text: String, at point: CGPoint) {
+        let charWidth: CGFloat = 8 * pixelSize
+        let charHeight: CGFloat = 8 * pixelSize
+        var x = point.x
+        let y = point.y - charHeight / 2
+        
+        for char in text.uppercased() {
+            drawPixelCharacter(context: context, character: char, at: CGPoint(x: x, y: y))
+            x += charWidth + pixelSize // Add 1 pixel spacing between characters
+        }
+    }
+    
+    private func drawPixelCharacter(context: CGContext, character: Character, at point: CGPoint) {
+        guard let pattern = getEarthboundCharacterPattern(character) else { return }
+        
+        for (row, rowPattern) in pattern.enumerated() {
+            for (col, pixel) in rowPattern.enumerated() {
+                if pixel == 1 {
+                    let pixelRect = CGRect(
+                        x: point.x + CGFloat(col) * pixelSize,
+                        y: point.y + CGFloat(7 - row) * pixelSize, // Flip Y coordinate
+                        width: pixelSize,
+                        height: pixelSize
+                    )
+                    context.fill(pixelRect)
+                }
+            }
+        }
+    }
+    
+    private func getEarthboundCharacterPattern(_ char: Character) -> [[Int]]? {
+        // Simplified 8x8 pixel patterns inspired by Earthbound's font
+        // Each pattern is an 8x8 grid where 1 = filled pixel, 0 = empty
+        switch char {
+        case "A": return [
+            [0,0,1,1,1,1,0,0],
+            [0,1,1,0,0,1,1,0],
+            [1,1,0,0,0,0,1,1],
+            [1,1,0,0,0,0,1,1],
+            [1,1,1,1,1,1,1,1],
+            [1,1,0,0,0,0,1,1],
+            [1,1,0,0,0,0,1,1],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "B": return [
+            [1,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,1,1,1,1,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "C": return [
+            [0,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,1,1,0],
+            [0,1,1,1,1,1,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "D": return [
+            [1,1,1,1,1,0,0,0],
+            [1,1,0,0,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,1,1,0,0],
+            [1,1,1,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "E": return [
+            [1,1,1,1,1,1,1,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,1,1,1,1,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,1,1,1,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "F": return [
+            [1,1,1,1,1,1,1,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,1,1,1,1,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "G": return [
+            [0,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,1,1,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [0,1,1,1,1,1,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "H": return [
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,1,1,1,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "I": return [
+            [1,1,1,1,1,1,1,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [1,1,1,1,1,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "J": return [
+            [1,1,1,1,1,1,1,0],
+            [0,0,0,0,1,1,0,0],
+            [0,0,0,0,1,1,0,0],
+            [0,0,0,0,1,1,0,0],
+            [1,1,0,0,1,1,0,0],
+            [1,1,0,0,1,1,0,0],
+            [0,1,1,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "K": return [
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,1,1,0,0],
+            [1,1,0,1,1,0,0,0],
+            [1,1,1,1,0,0,0,0],
+            [1,1,0,1,1,0,0,0],
+            [1,1,0,0,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "L": return [
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,1,1,1,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "M": return [
+            [1,1,0,0,0,0,1,1],
+            [1,1,1,0,0,1,1,1],
+            [1,1,0,1,1,0,1,1],
+            [1,1,0,1,1,0,1,1],
+            [1,1,0,0,0,0,1,1],
+            [1,1,0,0,0,0,1,1],
+            [1,1,0,0,0,0,1,1],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "N": return [
+            [1,1,0,0,0,1,1,0],
+            [1,1,1,0,0,1,1,0],
+            [1,1,0,1,0,1,1,0],
+            [1,1,0,1,0,1,1,0],
+            [1,1,0,0,1,1,1,0],
+            [1,1,0,0,1,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "O": return [
+            [0,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [0,1,1,1,1,1,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "P": return [
+            [1,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,1,1,1,1,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [1,1,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "Q": return [
+            [0,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,1,0,1,1,0],
+            [1,1,0,0,1,1,0,0],
+            [0,1,1,1,1,0,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "R": return [
+            [1,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,1,1,1,1,0,0],
+            [1,1,0,1,1,0,0,0],
+            [1,1,0,0,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "S": return [
+            [0,1,1,1,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,0,0,0],
+            [0,1,1,1,1,0,0,0],
+            [0,0,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [0,1,1,1,1,1,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "T": return [
+            [1,1,1,1,1,1,1,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "U": return [
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [0,1,1,1,1,1,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "V": return [
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [0,1,1,0,1,1,0,0],
+            [0,1,1,0,1,1,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "W": return [
+            [1,1,0,0,0,0,1,1],
+            [1,1,0,0,0,0,1,1],
+            [1,1,0,0,0,0,1,1],
+            [1,1,0,1,1,0,1,1],
+            [1,1,0,1,1,0,1,1],
+            [1,1,1,0,0,1,1,1],
+            [1,1,0,0,0,0,1,1],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "X": return [
+            [1,1,0,0,0,1,1,0],
+            [0,1,1,0,1,1,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,1,1,0,1,1,0,0],
+            [1,1,0,0,0,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "Y": return [
+            [1,1,0,0,0,1,1,0],
+            [1,1,0,0,0,1,1,0],
+            [0,1,1,0,1,1,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case "Z": return [
+            [1,1,1,1,1,1,1,0],
+            [0,0,0,0,0,1,1,0],
+            [0,0,0,0,1,1,0,0],
+            [0,0,0,1,1,0,0,0],
+            [0,0,1,1,0,0,0,0],
+            [0,1,1,0,0,0,0,0],
+            [1,1,1,1,1,1,1,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case " ": return [
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        case ":": return [
+            [0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,0,1,1,1,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0]
+        ]
+        default: return nil
+        }
+    }
+}
+
 // Earthbound-style dialogue box view
 class EarthboundDialogueBox: NSView {
-    private var messageLabel: NSTextField!
+    private var pixelTextView: EarthboundPixelTextView!
     private var backgroundView: NSView!
     private var borderView: NSView!
     
@@ -19,28 +366,30 @@ class EarthboundDialogueBox: NSView {
     }
     
     private func setupDialogueBox() {
-        // Create background (dark blue-gray like Earthbound)
+        // Create background (dark blue like Earthbound dialogue boxes)
         backgroundView = NSView()
         backgroundView.wantsLayer = true
-        backgroundView.layer?.backgroundColor = NSColor(red: 0.1, green: 0.15, blue: 0.25, alpha: 0.95).cgColor
+        backgroundView.layer?.backgroundColor = NSColor(red: 0.067, green: 0.133, blue: 0.267, alpha: 0.95).cgColor // RGB(17, 34, 68) - authentic Earthbound blue
+        backgroundView.layer?.cornerRadius = 8.0
+        
+        // Add subtle shadow for depth
+        backgroundView.layer?.shadowColor = NSColor.black.cgColor
+        backgroundView.layer?.shadowOffset = CGSize(width: 2, height: -2)
+        backgroundView.layer?.shadowOpacity = 0.5
+        backgroundView.layer?.shadowRadius = 4.0
         addSubview(backgroundView)
         
-        // Create border (white/light gray)
+        // Create border (bright white like SNES/pixel art)
         borderView = NSView()
         borderView.wantsLayer = true
-        borderView.layer?.borderColor = NSColor(red: 0.9, green: 0.9, blue: 0.95, alpha: 1.0).cgColor
-        borderView.layer?.borderWidth = 3.0
+        borderView.layer?.borderColor = NSColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0).cgColor // Pure white for authentic pixel art look
+        borderView.layer?.borderWidth = 2.0 // Slightly thinner for better proportions
+        borderView.layer?.cornerRadius = 4.0
         backgroundView.addSubview(borderView)
         
-        // Create message label with Earthbound-style font
-        messageLabel = NSTextField()
-        messageLabel.isEditable = false
-        messageLabel.isBordered = false
-        messageLabel.backgroundColor = NSColor.clear
-        messageLabel.textColor = NSColor.white
-        messageLabel.alignment = .center
-        messageLabel.font = NSFont.systemFont(ofSize: 16, weight: .medium)
-        borderView.addSubview(messageLabel)
+        // Create custom pixel text renderer for authentic Earthbound font
+        pixelTextView = EarthboundPixelTextView()
+        borderView.addSubview(pixelTextView)
         
         // Initially hidden
         alphaValue = 0.0
@@ -60,14 +409,14 @@ class EarthboundDialogueBox: NSView {
                                  width: bounds.width - borderInset * 2, 
                                  height: bounds.height - borderInset * 2)
         
-        // Position label inside border with padding
-        messageLabel.frame = NSRect(x: padding, y: padding,
-                                   width: borderView.bounds.width - padding * 2,
-                                   height: borderView.bounds.height - padding * 2)
+        // Position pixel text view inside border with padding
+        pixelTextView.frame = NSRect(x: padding, y: padding,
+                                    width: borderView.bounds.width - padding * 2,
+                                    height: borderView.bounds.height - padding * 2)
     }
     
     func show(message: String, duration: TimeInterval = 4.0) {
-        messageLabel.stringValue = message
+        pixelTextView.setText(message)
         
         // Animate in with a quick fade
         NSAnimationContext.runAnimationGroup { context in
@@ -161,8 +510,8 @@ class EarthboundMetalView: MTKView {
     
     private func setupDialogueBox() {
         // Create dialogue box positioned at bottom center like Earthbound
-        let boxWidth: CGFloat = 400
-        let boxHeight: CGFloat = 80
+        let boxWidth: CGFloat = 500 // Wider for chunky pixels
+        let boxHeight: CGFloat = 100 // Taller for chunky pixels
         let margin: CGFloat = 40
         
         let boxFrame = NSRect(
@@ -180,8 +529,8 @@ class EarthboundMetalView: MTKView {
     
     private func updateDialogueBoxFrame() {
         guard let dialogue = dialogueBox else { return }
-        let boxWidth: CGFloat = 400
-        let boxHeight: CGFloat = 80
+        let boxWidth: CGFloat = 500 // Wider for chunky pixels
+        let boxHeight: CGFloat = 100 // Taller for chunky pixels
         let margin: CGFloat = 40
         
         dialogue.frame = NSRect(

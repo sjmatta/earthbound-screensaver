@@ -35,6 +35,10 @@ class EarthboundMetalRenderer {
     private let commandQueue: MTLCommandQueue
     private let library: MTLLibrary
     
+    // Screen dimensions for scaling
+    private var screenWidth: Int = 1024
+    private var screenHeight: Int = 768
+    
     // Compute pipelines
     private let patternGenerationPipeline: MTLComputePipelineState
     private let distortionPipeline: MTLComputePipelineState
@@ -54,6 +58,7 @@ class EarthboundMetalRenderer {
     
     // Samplers
     private let linearSampler: MTLSamplerState
+    private let nearestSampler: MTLSamplerState
     
     init?(device: MTLDevice) {
         self.device = device
@@ -129,13 +134,34 @@ class EarthboundMetalRenderer {
             return nil
         }
         self.linearSampler = sampler
+        
+        // Create nearest neighbor sampler for chunky pixel scaling
+        let nearestSamplerDescriptor = MTLSamplerDescriptor()
+        nearestSamplerDescriptor.minFilter = .nearest
+        nearestSamplerDescriptor.magFilter = .nearest
+        nearestSamplerDescriptor.mipFilter = .nearest
+        nearestSamplerDescriptor.sAddressMode = .clampToEdge
+        nearestSamplerDescriptor.tAddressMode = .clampToEdge
+        
+        guard let nearestSampler = device.makeSamplerState(descriptor: nearestSamplerDescriptor) else {
+            return nil
+        }
+        self.nearestSampler = nearestSampler
     }
     
     func updateTextures(width: Int, height: Int) {
+        // Store actual screen size for final scaling
+        screenWidth = width
+        screenHeight = height
+        
+        // Use authentic SNES resolution for that classic low-res chunky pixel feel
+        let snesWidth = 256
+        let snesHeight = 224
+        
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(
             pixelFormat: .rgba32Float,
-            width: width,
-            height: height,
+            width: snesWidth,
+            height: snesHeight,
             mipmapped: false
         )
         textureDescriptor.usage = [.shaderRead, .shaderWrite]
@@ -536,7 +562,7 @@ class EarthboundMetalRenderer {
         
         renderEncoder.setRenderPipelineState(renderPipeline)
         renderEncoder.setFragmentTexture(texture, index: 0)
-        renderEncoder.setFragmentSamplerState(linearSampler, index: 0)
+        renderEncoder.setFragmentSamplerState(nearestSampler, index: 0)
         
         // Draw fullscreen quad using vertex_id generation in shader
         renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
